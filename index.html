@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Finance Assistant</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- Home Section -->
+<section id="home">
+  <div class="home-container">
+    <h1 class="welcome-title">
+      🏦 Welcome to <span class="brand">Finance Assistant</span>
+    </h1>
+    <div class="welcome-desc">
+      Your all-in-one tool for effortless expense tracking and bill splitting.
+    </div>
+    <div class="features">
+      <button class="feature-box" onclick="showSection('smart-split')">🤝 Smart Split</button>
+      <button class="feature-box" onclick="showSection('tracker')">📊 Expense Tracker</button>
+    </div>
+  </div>
+</section>
+
+<!-- Smart Split Section -->
+<section id="smart-split" style="display: none;">
+
+<!-- Back Button -->
+<button class="back-btn" onclick="showSection('home')">← Back</button>
+  <div class="container">
+
+<!-- Place this at the top of your Smart Split section -->
+<button id="shareSessionBtn" style="margin-bottom:12px;">🔗 Share Session</button>
+<div id="sessionLinkBox" style="margin:10px 0 15px 0; display:none;"></div>
+
+    <h2>🧠 Smart Bill Split</h2>
+    <form id="splitForm">
+      <div id="itemContainer">
+        <div class="item-block">
+          <label>Item Name</label>
+          <input type="text" class="item-name" />
+          <label>Item Price</label>
+          <input type="number" class="item-price" />
+          <label>Who paid?</label>
+          <input type="text" class="payer" />
+          <label>Who shared? (comma separated)</label>
+          <textarea class="sharers"></textarea>
+          <label>Include payer in split:</label>
+          <input type="checkbox" class="include-payer" />
+        </div>
+      </div>
+      <div class="buttons">
+        <button id="addItemBtn" type="button">+ Add Item</button>
+        <button id="clearAllBtn" type="button">🗑️ Clear All Entries</button>
+      </div>
+    </form>
+    <div id="itemList"></div>
+    <button id="calculateBtn" type="button" style="width:100%;margin:12px 0 0 0;">🧮 Calculate Smart Split</button>
+    <div id="result"></div>
+  </div>
+</section>
+
+<!-- Expense Tracker Section -->
+<section id="tracker" style="display:none;">
+<!-- Back Button -->
+<button class="back-btn" onclick="showSection('home')">← Back</button>
+  <div class="container">
+    <h2> <span style="font-size:1.2em;">💼</span> AI Personal Finance Assistant</h2>
+
+    <form id="transaction-form" style="margin-bottom:20px;">
+      <input type="number" id="amount" step="0.01" min="0" placeholder="Amount (₹)" required />
+      <input type="text" id="category" placeholder="Category (e.g. Food, Rent, Salary)" required />
+      <input type="date" id="date" required />
+      <select id="type">
+        <option value="Expense">Expense</option>
+        <option value="Income">Income</option>
+      </select>
+      <button type="submit" style="width:100%;margin-top:10px;">Add</button>
+      <div id="add-msg" style="color:green;font-size:0.95em;margin-top:6px;"></div>
+    </form>
+
+    <div class="metrics" id="metrics" style="margin-bottom:18px;"></div>
+    
+    <div class="manage-row" style="margin-bottom:16px;">
+      <button id="download-csv" style="margin-right:7px;">⬇️ Download Backup CSV</button>
+      <button id="reset-btn" style="margin-right:7px;">🗑️ Reset All Transactions</button>
+      <div style="font-size:0.95em; margin-top:12px; display:flex; align-items:center;">
+  <input type="checkbox" id="confirm-reset" style="margin:0 8px 0 0;"/>
+  <label for="confirm-reset" style="margin:0; white-space:nowrap;">
+    I confirm I want to delete all transactions.
+  </label>
+</div>
+    </div>
+
+    <div id="transactions-table" style="margin-bottom:24px;">
+      <h3>📋 All Transactions</h3>
+      <table id="transactions" style="width:100%;border-collapse:collapse;margin-top:8px;">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- JS will render transactions here -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="charts-row" style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px;">
+      <div>
+        <h4>Income vs Expense</h4>
+        <canvas id="incomeExpenseChart" width="180" height="180"></canvas>
+      </div>
+      <div>
+        <h4>Expense Breakdown</h4>
+        <canvas id="expenseCategoryChart" width="180" height="180"></canvas>
+      </div>
+    </div>
+
+    <form id="ai-form" style="margin-bottom:18px;">
+      <h3>💬 Ask AI for Financial Advice</h3>
+      <input type="text" id="ai-question" placeholder="Ask a financial question..." style="width:100%;margin-bottom:6px;" required/>
+      <button type="submit" style="width:100%;">Ask AI</button>
+      <div id="ai-response" style="font-size:1em;color:#444;margin-top:10px;"></div>
+    </form>
+  </div>
+</section>
+
+<!-- Firebase App (the core Firebase SDK) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<!-- Firestore SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDw_JZGfC7dbdFNkL8KuHS66-QrEqebKv8",
+    authDomain: "smart-splitter.firebaseapp.com",
+    projectId: "smart-splitter",
+    storageBucket: "smart-splitter.appspot.com",
+    messagingSenderId: "461437551071",
+    appId: "1:461437551071:web:4571c72bc208da596cc46a",
+    measurementId: "G-9JPX48ZQFY"
+  };
+  firebase.initializeApp(firebaseConfig);
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>
+
